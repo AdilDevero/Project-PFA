@@ -21,10 +21,10 @@
     </button>
     <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
       <ul class="navbar-nav gap-3">
-        <li class="nav-item"><a class="nav-link text-danger fw-bold" href="home.html">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="Our Cars.html">Our Cars</a></li>
-        <li class="nav-item"><a class="nav-link" href="Contact US.html">Contact Us</a></li>
-        <li class="nav-item"><a class="nav-link" href="About us.html">About Us</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-danger text-dark px-3 rounded-pill" href="home.php">Home</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-danger text-dark px-3 rounded-pill" href="OurCars.php">Our Cars</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-danger text-dark px-3 rounded-pill" href="Aboutus.php">About Us</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-danger text-dark px-3 rounded-pill" href="admin_login.php">Staff</a></li>
       </ul>
     </div>
     <div class="d-none d-lg-flex align-items-center gap-2 text-danger fw-bold">
@@ -46,73 +46,56 @@
   <div class="container position-relative">
     <h1 class="display-4 fw-bold mb-4">Sahara , Ride the Real Morocco.</h1>
     <div class="d-flex justify-content-center gap-3 flex-wrap">
-      <a href="#" class="btn btn-danger btn-lg rounded-pill d-flex align-items-center gap-2">
+      <a href="OurCars.php" class="btn btn-danger btn-lg rounded-pill d-flex align-items-center gap-2">
         Book A Rental <i class="ri-arrow-right-line"></i>
       </a>
-      <a href="#contact" class="btn btn-dark btn-lg rounded-pill d-flex align-items-center gap-2">
-        Contact Us <i class="ri-arrow-right-up-line"></i>
-      </a>
+     
     </div>
   </div>
 </section>
 
-<!-- Floating Booking Form -->
-<div class="booking-form container bg-white rounded-pill shadow px-4 py-3 position-relative">
-  <form class="row g-2 align-items-center justify-content-center text-center">
-    <div class="col-md-2"><input type="text" class="form-control rounded-pill" placeholder="Full Name"></div>
-    <div class="col-md-2"><input type="text" class="form-control rounded-pill" placeholder="Mobile No"></div>
-    <div class="col-md-2"><input type="text" class="form-control rounded-pill" placeholder="Pickup Location"></div>
-    <div class="col-md-2"><input type="date" class="form-control rounded-pill"></div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-danger rounded-pill px-4">Send</button>
-    </div>
-  </form>
-</div>
+
 
 <!-- Car Listings -->
 <section class="py-5">
   <div class="container">
+    <h3 class="mb-4 text-center">Featured Cars</h3>
     <div class="row g-4">
-
-      <!-- Car Card Example -->
+      <?php
+      require_once 'db_connect.php';
+      $sql = "SELECT v.id,v.model,v.daily_rate,v.status,v.seats,v.transmission,v.fuel_type, b.name AS brand, c.name AS category, vi.url AS image_url
+              FROM vehicles v
+              LEFT JOIN brands b ON v.brand_id = b.id
+              LEFT JOIN categories c ON v.category_id = c.id
+              LEFT JOIN (
+                SELECT vi1.vehicle_id, vi1.url
+                FROM vehicle_images vi1
+                JOIN (
+                  SELECT vehicle_id, MIN(id) AS minid FROM vehicle_images GROUP BY vehicle_id
+                ) vi2 ON vi1.vehicle_id = vi2.vehicle_id AND vi1.id = vi2.minid
+              ) vi ON vi.vehicle_id = v.id
+              WHERE v.status = 'available'
+              ORDER BY v.id DESC
+              LIMIT 6";
+      $stmt = $pdo->query($sql);
+      $cars = $stmt->fetchAll();
+      foreach ($cars as $car):
+        $img = $car['image_url'] ?? 'img/placeholder.png';
+      ?>
       <div class="col-md-4">
         <div class="card shadow-sm h-100">
-          <img src="img/pexels-pixabay-210019.jpg" class="card-img-top" alt="Dacia Duster">
+          <img src="<?= htmlspecialchars($img) ?>" class="card-img-top" alt="<?= htmlspecialchars($car['model']) ?>">
           <div class="card-body">
-            <h5 class="card-title">Alpha Romeo</h5>
-            <p class="card-text">Automatic | 5 Seats | AC | GPS</p>
-            <p class="fw-bold text-danger">From 450 MAD/day</p>
-            <a href="#" class="btn btn-outline-danger w-100">Book Now</a>
+            <h5 class="card-title"><?= htmlspecialchars($car['brand'] . ' ' . $car['model']) ?></h5>
+            <p class="card-text"><?= htmlspecialchars($car['transmission']) ?> | <?= htmlspecialchars($car['seats']) ?> Seats</p>
+            <p class="fw-bold text-danger">From <?= number_format($car['daily_rate'],2) ?> MAD/day</p>
+            <a href="tickets.php" class="btn btn-outline-danger w-100">
+              <i class="ri-calendar-booking-line"></i> Book New
+            </a>
           </div>
         </div>
       </div>
-
-      <!-- Repeat for more cars -->
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="img/mercedes-c-klasse-limousine-2021.jpg" class="card-img-top" alt="Toyota Yaris">
-          <div class="card-body">
-            <h5 class="card-title">Mercedes Benz Class C</h5>
-            <p class="card-text">Manual | 5 Seats | Bluetooth</p>
-            <p class="fw-bold text-danger">From 300 MAD/day</p>
-            <a href="#" class="btn btn-outline-danger w-100">Book Now</a>
-          </div>
-        </div>
-      </div>
-
-      <div class="col-md-4">
-        <div class="card shadow-sm h-100">
-          <img src="img/dacia-duster-2024-voiture-vente-maroc-tanger-derkaoui-auto.pg_.jpg" class="card-img-top" alt="Hyundai Tucson">
-          <div class="card-body">
-            <h5 class="card-title"> Dacia Duster</h5>
-            <p class="card-text">Automatic | SUV | Full Options</p>
-            <p class="fw-bold text-danger">From 600 MAD/day</p>
-            <a href="#" class="btn btn-outline-danger w-100">Book Now</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Add more cars as needed -->
+      <?php endforeach; ?>
     </div>
   </div>
 </section>
@@ -159,28 +142,6 @@
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADK0lEQVR4nO2Zz08TQRTHNzM0MQHixaMnI2jE4Mmr/4A/okej3r0oAn+AiYke9IYkpDNFDAkRqokHL4bEEzFelIqAJP5IDPvetrXQAhXSsrRjplYMboGdnd0th/0m79TN7Pcz8+bN7KthRIoUKZJUbNg8Qxj0UYZJwnCGcsxTjpv1yBOGH2u/cbNXPmscCCVy7YRDP2XwmXIUSsFgXgIbg9m28I3fFS1yJinDZWXjDhBcIgzvyDHDMR/Hk4RjStv4f0EYThsJOBGodxqHS5RD0W/z9F9arVEOFwMxTxLWDcrBDsw8/xtgE25dD2LmQzCP2xCUwQV/3A+ZHX+WVs9U24glOiey4uzLn6LreVZ0jGfE4afWXhBFud98qDbeN2wLR3H1TV5Mpctis1IVjXR5cnn3jc3hg1Z1qpVKj+YPDVti4vuG2E9X9gCoQcSxx5v70XQr5ZDzCvBwpriveTcA8pyQB6aH2Yd+r+aPjmVEeZeUUQbg8oyAPmUAT9eDevS+W2lotlCuiPupNXFzqrAdx55l9h+TwbySeXnZ0qk4498a5/65VznPY8YS6dOhpI+Mt5myw/zs8qbn8ajqZpbXXp2XzeVtB8DY1w0tAMpwXGEF8JPOyxYKToDHc7/0VoBjSmUFlvwGGNAEoBxyKgDlgweApUAA7k2viXypsiO2GhwBpa2q47l8qSK6X2QDAXCdQo9cnriNVBVCtI9Y/qeQyibWAfhR3ApsEyfDAJiEUkBlVLZHQgAYUNjYhONt1wAxbnarfKgcGU3viC8rzirEFtYdz7U+cZv/KGIs3eUaoL4KswolLtgyyhQvc6ppFDQA4WZvqB80vgIwXPLcvZMds2YDEIa3DK2PeobTzQIgHN4bSUENLfHF45TBavgA4ENbpS7Z7lNpbOkDgE0T5nnDT8l2n1sIPQCwCcNrRhCS7T43XTrPAAxWfZ95hxh0yo6Z3wBEbtghs8MIRbI6xbFnt2u3GgDkaqVSu9p40WC2TZ7YhMOcKoC8qhB5wjblL6YGkpet2qpwnHhtlgqLRbuybleFDLNoVx6kVi15Ja61R4atU832GylSJONg6DekIcfGE7hs2QAAAABJRU5ErkJggg==" alt="facebook-new">   
 </div>
   </div>
-
-  <div class="contact-form">
-    <form id="contactForm">
-      <div class="form-group" id="nameGroup">
-  <input type="text" id="firstName" placeholder="Enter Your First Name" required/>
-  <input type="text" id="lastName" placeholder="Enter Your Last Name" required/>
-</div>
-<div class="validation-message" id="nameError">Please Respect Form of names</div>
-
-      <div class="form-group">
-        <input type="email" placeholder="Enter Your Email" required/>
-        <input type="tel" placeholder="Enter Your Number" required/>
-      </div>
-      <div class="form-group message">
-        <textarea placeholder="Write Your Message" required></textarea>
-      </div>
-      <button type="submit" class="send-btn">Send Message</button>
-      <div class="paper-plane">✈️</div>
-      <div class="success-message" id="successMessage">Message Sent Successfully!</div>
-    </form>
-  </div>
-</div>
 </section>
 
 
